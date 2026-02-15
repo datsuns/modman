@@ -1,4 +1,4 @@
-use crate::models::{ModMetadata, ModLoader};
+use crate::models::ModMetadata;
 use std::fs;
 use std::path::Path;
 use std::io::Read;
