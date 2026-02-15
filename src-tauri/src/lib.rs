@@ -1,6 +1,7 @@
 mod models;
 mod mod_scanner;
 mod launcher;
+mod file_ops;
 
 use models::{ModMetadata, LauncherProfile};
 use std::path::PathBuf;
@@ -27,7 +28,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![greet, scan_mods_command, fetch_profiles_command])
+        .invoke_handler(tauri::generate_handler![
+            greet, 
+            scan_mods_command, 
+            fetch_profiles_command,
+            file_ops::toggle_mod_enabled_command
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

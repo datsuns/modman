@@ -54,6 +54,19 @@ export async function greet(name: string): Promise<string> {
     return await invoke("greet", { name });
 }
 
+export async function toggleModEnabled(path: string, enabled: boolean): Promise<string> {
+    if (USE_MOCK) {
+        console.log(`Mock toggling ${path} to ${enabled}`);
+        return path;
+    }
+    try {
+        return await invoke("toggle_mod_enabled_command", { path, enabled });
+    } catch (error) {
+        console.error("Failed to toggle mod:", error);
+        throw error;
+    }
+}
+
 const MOCK_MODS: ModMetadata[] = [
     {
         file_name: "lithium-fabric-mc1.20.1-0.11.2.jar",

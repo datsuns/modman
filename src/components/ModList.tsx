@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ModMetadata } from "../types";
-import { scanMods } from "../lib/api";
+import { scanMods, toggleModEnabled } from "../lib/api";
 import { Package, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
@@ -27,11 +27,29 @@ export function ModList({ path }: ModListProps) {
         setLoading(false);
     }
 
-    function toggleMod(id: string) {
-        setMods(mods.map(mod =>
-            mod.id === id ? { ...mod, enabled: !mod.enabled } : mod
-        ));
-        // Todo: Call backend to rename file
+    async function toggleMod(id: string) {
+        const modToToggle = mods.find(m => m.id === id);
+        if (!modToToggle) return;
+
+        try {
+            const newPath = await toggleModEnabled(modToToggle.file_path, !modToToggle.enabled);
+
+            setMods(mods.map(mod => {
+                if (mod.id === id) {
+                    return {
+                        ...mod,
+                        enabled: !mod.enabled,
+                        file_path: newPath,
+                        // Update filename for display if needed, though we usually show 'name'
+                        file_name: newPath.split(/[\\/]/).pop() || mod.file_name
+                    };
+                }
+                return mod;
+            }));
+        } catch (error) {
+            console.error("Failed to toggle mod:", error);
+            // Optionally show error notification
+        }
     }
 
     return (
