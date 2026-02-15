@@ -2,6 +2,7 @@ mod models;
 mod mod_scanner;
 mod launcher;
 mod file_ops;
+mod modrinth;
 
 use models::{ModMetadata, LauncherProfile};
 use std::path::PathBuf;
@@ -33,7 +34,10 @@ pub fn run() {
             scan_mods_command, 
             fetch_profiles_command,
             file_ops::toggle_mod_enabled_command,
-            file_ops::install_mod_command
+            file_ops::install_mod_command,
+            modrinth::search_mods_command,
+            modrinth::get_versions_command,
+            modrinth::install_version_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

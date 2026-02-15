@@ -6,6 +6,7 @@ pub struct LauncherProfile {
     pub id: String,
     pub name: String,
     pub mods_dir: PathBuf, // Resolved path to the mods folder
+    pub last_version_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

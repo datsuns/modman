@@ -2,13 +2,32 @@
 import { useState, useEffect } from "react";
 import { ModList } from "./components/ModList";
 import { ModDetail } from "./components/ModDetail";
+import { ModrinthSearchModal } from "./components/ModrinthSearchModal";
 import { fetchLauncherProfiles, installMod, scanMods, toggleModEnabled } from "./lib/api";
 import { LauncherProfile, ModMetadata } from "./types";
-import { LayoutGrid, Settings, FolderOpen, Play, Loader2 } from "lucide-react";
+import { LayoutGrid, Settings, FolderOpen, Play, Loader2, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+
+function parseProfileVersion(versionId?: string): { loader?: string, gameVersion?: string } {
+  if (!versionId) return {};
+
+  const lower = versionId.toLowerCase();
+  let loader: string | undefined = undefined;
+  if (lower.includes("fabric")) loader = "fabric";
+  else if (lower.includes("neoforge")) loader = "neoforge";
+  else if (lower.includes("forge")) loader = "forge";
+  else if (lower.includes("quilt")) loader = "quilt";
+
+  // Attempt to find game version (e.g., 1.20.1)
+  // We strictly look for versions starting with "1." to avoid matching loader versions (e.g. 0.14.2) which often appear in the string.
+  const versionMatch = lower.match(/(1\.\d+(\.\d+)?)/);
+  const gameVersion = versionMatch ? versionMatch[0] : undefined;
+
+  return { loader, gameVersion };
+}
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -22,6 +41,7 @@ function App() {
   // Lifted state from ModList
   const [mods, setMods] = useState<ModMetadata[]>([]);
   const [loadingMods, setLoadingMods] = useState(false);
+  const [isModrinthOpen, setIsModrinthOpen] = useState(false);
 
   useEffect(() => {
     loadProfiles();
@@ -194,13 +214,36 @@ function App() {
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-[#333] bg-[#1e1e1e] flex items-center px-6 justify-between">
           <h2 className="text-lg font-medium text-gray-100">
-            {activeTab === "mods" && activeProfile ? `${t('sidebar.mods')} (${activeProfile.name})` : ""}
+            {activeTab === "mods" && activeProfile ? (
+              <div className="flex items-center gap-4">
+                <span>{`${t('sidebar.mods')} (${activeProfile.name})`}</span>
+                <button
+                  onClick={() => setIsModrinthOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-sm font-medium transition-colors"
+                >
+                  <Plus size={16} />
+                  Add Mod
+                </button>
+              </div>
+            ) : ""}
             {activeTab === "instances" && t('sidebar.instances')}
             {activeTab === "settings" && t('sidebar.settings')}
           </h2>
         </header>
 
         <div className="flex-1 overflow-hidden relative">
+          <ModrinthSearchModal
+            isOpen={isModrinthOpen}
+            onClose={() => setIsModrinthOpen(false)}
+            currentProfile={activeProfile || null}
+            currentLoaderType={activeProfile ? parseProfileVersion(activeProfile.last_version_id).loader : undefined}
+            currentGameVersion={activeProfile ? parseProfileVersion(activeProfile.last_version_id).gameVersion : undefined}
+            onModInstalled={() => {
+              // Refresh list
+              if (activeProfile) loadMods(activeProfile.mods_dir);
+            }}
+          />
+
           {activeTab === "mods" && activeProfile && (
             <div className="absolute inset-0 flex">
               <div className="w-1/2 flex flex-col border-r border-[#333] overflow-y-auto p-4 custom-scrollbar">

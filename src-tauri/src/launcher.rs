@@ -34,10 +34,13 @@ pub fn get_launcher_profiles(custom_path: Option<String>) -> Result<Vec<Launcher
                 minecraft_dir.join("mods")
             };
 
+            let last_version_id = value.get("lastVersionId").and_then(|v| v.as_str()).map(|s| s.to_string());
+
             profiles.push(LauncherProfile {
                 id: key.clone(),
                 name,
                 mods_dir,
+                last_version_id,
             });
         }
     }
