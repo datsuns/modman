@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { ModList } from "./components/ModList";
+import { ModDetail } from "./components/ModDetail";
 import { fetchLauncherProfiles } from "./lib/api";
-import { LauncherProfile } from "./types";
+import { LauncherProfile, ModMetadata } from "./types";
 import { LayoutGrid, Settings, FolderOpen, Play } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ function App() {
   const [profiles, setProfiles] = useState<LauncherProfile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const [launcherPath, setLauncherPath] = useState(localStorage.getItem("launcherPath") || "");
+  const [selectedMod, setSelectedMod] = useState<ModMetadata | null>(null);
 
   useEffect(() => {
     loadProfiles();
@@ -98,101 +100,118 @@ function App() {
           </h2>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === "mods" && activeProfile && <ModList path={activeProfile.mods_dir} />}
+        <div className="flex-1 overflow-hidden relative">
+          {activeTab === "mods" && activeProfile && (
+            <div className="absolute inset-0 flex">
+              <div className="w-1/2 flex flex-col border-r border-[#333] overflow-y-auto p-4 custom-scrollbar">
+                <ModList
+                  path={activeProfile.mods_dir}
+                  selectedModId={selectedMod?.id}
+                  onSelect={setSelectedMod}
+                />
+              </div>
+              <div className="w-1/2 bg-[#1e1e1e] overflow-y-auto custom-scrollbar">
+                <ModDetail mod={selectedMod} />
+              </div>
+            </div>
+          )}
           {activeTab === "instances" && (
-            <div className="text-center text-gray-500 mt-20">Instance Manager uses a different folder structure.</div>
+            <div className="absolute inset-0 overflow-y-auto p-6">
+              <div className="text-center text-gray-500 mt-20">Instance Manager uses a different folder structure.</div>
+            </div>
           )}
           {activeTab === "settings" && (
-            <div className="max-w-2xl mx-auto space-y-6">
-              <h3 className="text-xl font-medium mb-6">{t('sidebar.settings')}</h3>
+            <div className="absolute inset-0 overflow-y-auto p-6">
+              <div className="max-w-2xl mx-auto space-y-6">
+                <h3 className="text-xl font-medium mb-6">{t('sidebar.settings')}</h3>
 
-              {/* Language Config */}
-              <div className="bg-[#252526] rounded-lg p-6 border border-[#333]">
-                <h4 className="text-md font-medium mb-4 text-emerald-400">{t('settings.language')}</h4>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => i18n.changeLanguage('en')}
-                    className={clsx(
-                      "px-4 py-2 rounded-md text-sm font-medium border transition-colors",
-                      i18n.language.startsWith('en')
-                        ? "bg-emerald-600 border-emerald-500 text-white"
-                        : "border-[#3e3e3e] hover:bg-[#333] text-gray-300"
-                    )}
-                  >
-                    {t('settings.english')}
-                  </button>
-                  <button
-                    onClick={() => i18n.changeLanguage('ja')}
-                    className={clsx(
-                      "px-4 py-2 rounded-md text-sm font-medium border transition-colors",
-                      i18n.language === 'ja'
-                        ? "bg-emerald-600 border-emerald-500 text-white"
-                        : "border-[#3e3e3e] hover:bg-[#333] text-gray-300"
-                    )}
-                  >
-                    {t('settings.japanese')}
-                  </button>
-                </div>
-              </div>
-
-              {/* Launcher Path Config */}
-              <div className="bg-[#252526] rounded-lg p-6 border border-[#333]">
-                <h4 className="text-md font-medium mb-4 text-emerald-400">{t('settings.launcher_path')}</h4>
-                <div className="flex flex-col gap-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={launcherPath}
-                      onChange={(e) => setLauncherPath(e.target.value)}
-                      placeholder={t('settings.launcher_path_placeholder')}
-                      className="flex-1 bg-[#1e1e1e] border border-[#333] rounded p-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-600"
-                    />
+                {/* Language Config */}
+                <div className="bg-[#252526] rounded-lg p-6 border border-[#333]">
+                  <h4 className="text-md font-medium mb-4 text-emerald-400">{t('settings.language')}</h4>
+                  <div className="flex gap-3">
                     <button
-                      onClick={async () => {
-                        try {
-                          const selected = await open({
-                            multiple: false,
-                            directory: false,
-                            filters: [{
-                              name: 'Launcher Profiles',
-                              extensions: ['json']
-                            }]
-                          });
-                          if (selected && typeof selected === 'string') {
-                            setLauncherPath(selected);
+                      onClick={() => i18n.changeLanguage('en')}
+                      className={clsx(
+                        "px-4 py-2 rounded-md text-sm font-medium border transition-colors",
+                        i18n.language.startsWith('en')
+                          ? "bg-emerald-600 border-emerald-500 text-white"
+                          : "border-[#3e3e3e] hover:bg-[#333] text-gray-300"
+                      )}
+                    >
+                      {t('settings.english')}
+                    </button>
+                    <button
+                      onClick={() => i18n.changeLanguage('ja')}
+                      className={clsx(
+                        "px-4 py-2 rounded-md text-sm font-medium border transition-colors",
+                        i18n.language === 'ja'
+                          ? "bg-emerald-600 border-emerald-500 text-white"
+                          : "border-[#3e3e3e] hover:bg-[#333] text-gray-300"
+                      )}
+                    >
+                      {t('settings.japanese')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Launcher Path Config */}
+                <div className="bg-[#252526] rounded-lg p-6 border border-[#333]">
+                  <h4 className="text-md font-medium mb-4 text-emerald-400">{t('settings.launcher_path')}</h4>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={launcherPath}
+                        onChange={(e) => setLauncherPath(e.target.value)}
+                        placeholder={t('settings.launcher_path_placeholder')}
+                        className="flex-1 bg-[#1e1e1e] border border-[#333] rounded p-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-600"
+                      />
+                      <button
+                        onClick={async () => {
+                          try {
+                            const selected = await open({
+                              multiple: false,
+                              directory: false,
+                              filters: [{
+                                name: 'Launcher Profiles',
+                                extensions: ['json']
+                              }]
+                            });
+                            if (selected && typeof selected === 'string') {
+                              setLauncherPath(selected);
+                            }
+                          } catch (err) {
+                            console.error("Failed to open file dialog", err);
                           }
-                        } catch (err) {
-                          console.error("Failed to open file dialog", err);
-                        }
-                      }}
-                      className="px-4 py-2 bg-[#3e3e3e] hover:bg-[#4e4e4e] text-white rounded-md text-sm font-medium transition-colors"
-                    >
-                      {t('settings.browse')}
-                    </button>
-                  </div>
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => setLauncherPath("")}
-                      className="px-4 py-2 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors"
-                    >
-                      {t('settings.reset_default')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        localStorage.setItem("launcherPath", launcherPath);
-                        loadProfiles(); // Reload profiles with new path
-                      }}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition-colors"
-                    >
-                      {t('settings.save')}
-                    </button>
+                        }}
+                        className="px-4 py-2 bg-[#3e3e3e] hover:bg-[#4e4e4e] text-white rounded-md text-sm font-medium transition-colors"
+                      >
+                        {t('settings.browse')}
+                      </button>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={() => setLauncherPath("")}
+                        className="px-4 py-2 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                      >
+                        {t('settings.reset_default')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          localStorage.setItem("launcherPath", launcherPath);
+                          loadProfiles(); // Reload profiles with new path
+                        }}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition-colors"
+                      >
+                        {t('settings.save')}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="text-center text-xs text-gray-600 pt-8">
-                {t('app.version')}
+                <div className="text-center text-xs text-gray-600 pt-8">
+                  {t('app.version')}
+                </div>
               </div>
             </div>
           )}

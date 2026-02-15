@@ -27,5 +27,13 @@
         "browse": "Browse",
         "reset_default": "Reset to Default",
         "save": "Save"
+    },
+    "moddetail": {
+        "no_selection": "Select a mod to view details",
+        "description": "Description",
+        "no_description": "No description available.",
+        "authors": "Authors",
+        "unknown": "Unknown",
+        "file_info": "File Information"
     }
 }

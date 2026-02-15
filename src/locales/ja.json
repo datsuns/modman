@@ -27,5 +27,13 @@
         "browse": "参照",
         "reset_default": "デフォルトに戻す",
         "save": "保存"
+    },
+    "moddetail": {
+        "no_selection": "詳細を表示するにはMODを選択してください",
+        "description": "説明",
+        "no_description": "説明はありません。",
+        "authors": "作者",
+        "unknown": "不明",
+        "file_info": "ファイル情報"
     }
 }
