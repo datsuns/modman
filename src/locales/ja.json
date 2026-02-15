@@ -2,7 +2,7 @@
     "app": {
         "title": "ModMan",
         "launch": "Minecraftを起動",
-        "version": "v0.1.0-alpha",
+        "version": "v1.1.0",
         "scan": "スキャン",
         "loading": "MODを読み込み中...",
         "no_mods": "MODが見つかりませんでした: {{path}}",

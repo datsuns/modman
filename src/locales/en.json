@@ -2,7 +2,7 @@
     "app": {
         "title": "ModMan",
         "launch": "Launch Minecraft",
-        "version": "v0.1.0-alpha",
+        "version": "v1.1.0",
         "scan": "Scan",
         "loading": "Loading mods...",
         "no_mods": "No mods found in: {{path}}",
