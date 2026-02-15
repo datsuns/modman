@@ -32,7 +32,7 @@ function App() {
   const activeProfile = profiles.find(p => p.id === selectedProfileId);
 
   return (
-    <div className="flex h-screen bg-[#1e1e1e] text-gray-200 font-sans overflow-hidden">
+    <div className="flex h-screen w-full bg-[#1e1e1e] text-gray-200 font-sans overflow-hidden">
       {/* Sidebar */}
       <aside className="w-64 bg-[#252526] border-r border-[#333] flex flex-col">
         <div className="p-4 flex items-center gap-2 border-b border-[#333]">
