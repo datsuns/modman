@@ -106,7 +106,7 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                 <div className="flex items-center justify-between p-4 border-b border-white/5 bg-[#252526]">
                     <h2 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
                         {/* <img src="/modrinth-logo.svg" className="w-6 h-6" /> */}
-                        Modrinth
+                        {t('modrinth.title')}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
                         <X size={20} />
@@ -123,7 +123,7 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                                         type="text"
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
-                                        placeholder={t('modrinth.search_placeholder', 'Search mods...')}
+                                        placeholder={t('modrinth.search_placeholder')}
                                         className="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500/50 transition-colors"
                                         autoFocus
                                     />
@@ -171,7 +171,7 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                                     ))
                                 ) : query && (
                                     <div className="text-center text-gray-500 py-12">
-                                        No results found
+                                        {t('modrinth.no_results')}
                                     </div>
                                 )}
                             </div>
@@ -204,7 +204,7 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                                 </div>
 
                                 <div className="flex items-center justify-between mb-3">
-                                    <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Versions</h4>
+                                    <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t('modrinth.versions')}</h4>
                                     <div className="flex items-center gap-2">
                                         <label className="text-xs text-gray-400 flex items-center gap-2 cursor-pointer select-none">
                                             <input
@@ -213,7 +213,7 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                                                 onChange={toggleFilters}
                                                 className="rounded border-gray-600 bg-gray-700 text-indigo-500 focus:ring-offset-0 focus:ring-1 focus:ring-indigo-500"
                                             />
-                                            {t('modrinth.filter_compatible', 'Compatible only')} ({currentLoaderType || 'Any'}, {currentGameVersion || 'Any'})
+                                            {t('modrinth.compatible_only')} ({currentLoaderType || t('modrinth.any')}, {currentGameVersion || t('modrinth.any')})
                                         </label>
                                     </div>
                                 </div>
@@ -257,7 +257,7 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                                                         ) : (
                                                             <Download size={16} />
                                                         )}
-                                                        Install
+                                                        {t('modrinth.install')}
                                                     </button>
                                                 </div>
                                             )
@@ -265,10 +265,10 @@ export function ModrinthSearchModal({ isOpen, onClose, currentProfile, currentLo
                                     </div>
                                 ) : (
                                     <div className="text-center text-gray-500 py-8">
-                                        <p>No versions found.</p>
+                                        <p>{t('modrinth.no_versions')}</p>
                                         {useFilters && (
                                             <p className="text-xs mt-2 text-gray-600">
-                                                Try unchecking "Compatible only" to see all versions.
+                                                {t('modrinth.try_unchecking')}
                                             </p>
                                         )}
                                     </div>

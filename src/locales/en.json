@@ -34,6 +34,21 @@
         "no_description": "No description available.",
         "authors": "Authors",
         "unknown": "Unknown",
-        "file_info": "File Information"
+        "file_info": "File Information",
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+    },
+    "modrinth": {
+        "any": "Any",
+        "add_mod": "Add Mod",
+        "title": "Modrinth",
+        "search_placeholder": "Search mods...",
+        "no_results": "No results found",
+        "versions": "Versions",
+        "install": "Install",
+        "compatible_only": "Compatible only",
+        "no_versions": "No versions found.",
+        "try_unchecking": "Try unchecking \"Compatible only\" to see all versions.",
+        "no_compatible": "No compatible versions found for {{loader}} {{version}}"
     }
 }

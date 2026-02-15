@@ -34,6 +34,21 @@
         "no_description": "説明はありません。",
         "authors": "作者",
         "unknown": "不明",
-        "file_info": "ファイル情報"
+        "file_info": "ファイル情報",
+        "enabled": "有効",
+        "disabled": "無効"
+    },
+    "modrinth": {
+        "any": "指定なし",
+        "add_mod": "MODを追加",
+        "title": "Modrinth",
+        "search_placeholder": "MODを検索...",
+        "no_results": "結果が見つかりませんでした",
+        "versions": "バージョン",
+        "install": "インストール",
+        "compatible_only": "互換性ありのみ表示",
+        "no_versions": "バージョンが見つかりませんでした。",
+        "try_unchecking": "「互換性ありのみ表示」のチェックを外して、すべてのバージョンを確認してください。",
+        "no_compatible": "{{loader}} {{version}} と互換性のあるバージョンが見つかりませんでした"
     }
 }
