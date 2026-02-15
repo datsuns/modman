@@ -32,7 +32,8 @@ pub fn run() {
             greet, 
             scan_mods_command, 
             fetch_profiles_command,
-            file_ops::toggle_mod_enabled_command
+            file_ops::toggle_mod_enabled_command,
+            file_ops::install_mod_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -40,3 +40,35 @@ pub fn toggle_mod_enabled_command(path: String, enabled: bool) -> Result<String,
 
     Ok(new_path.to_string_lossy().to_string())
 }
+
+#[tauri::command]
+pub fn install_mod_command(source_path: String, target_dir: String) -> Result<String, String> {
+    let source = PathBuf::from(&source_path);
+    let target = PathBuf::from(&target_dir);
+
+    // Basic validation
+    if !source.exists() {
+        return Err("Source file does not exist".to_string());
+    }
+    if !target.exists() {
+        return Err("Target directory does not exist".to_string());
+    }
+    
+    // Check extension
+    if let Some(ext) = source.extension() {
+        if ext != "jar" {
+            return Err("Only .jar files are allowed".to_string());
+        }
+    } else {
+         return Err("Invalid file extension".to_string());
+    }
+
+    let file_name = source.file_name().ok_or("Invalid source file name")?;
+    let dest_path = target.join(file_name);
+
+    // Removed "File already exists" check to allow overwriting (update or reinstall)
+    
+    fs::copy(&source, &dest_path).map_err(|e| e.to_string())?;
+
+    Ok(dest_path.to_string_lossy().to_string())
+}

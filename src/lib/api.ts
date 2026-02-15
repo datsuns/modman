@@ -67,6 +67,10 @@ export async function toggleModEnabled(path: string, enabled: boolean): Promise<
     }
 }
 
+export async function installMod(sourcePath: string, targetDir: string): Promise<string> {
+    return await invoke("install_mod_command", { sourcePath, targetDir });
+}
+
 const MOCK_MODS: ModMetadata[] = [
     {
         file_name: "lithium-fabric-mc1.20.1-0.11.2.jar",

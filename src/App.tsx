@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { ModList } from "./components/ModList";
 import { ModDetail } from "./components/ModDetail";
-import { fetchLauncherProfiles } from "./lib/api";
+import { fetchLauncherProfiles, installMod } from "./lib/api";
 import { LauncherProfile, ModMetadata } from "./types";
 import { LayoutGrid, Settings, FolderOpen, Play } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { open } from "@tauri-apps/plugin-dialog";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -15,16 +16,69 @@ function App() {
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const [launcherPath, setLauncherPath] = useState(localStorage.getItem("launcherPath") || "");
   const [selectedMod, setSelectedMod] = useState<ModMetadata | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     loadProfiles();
   }, []);
 
+  // Drag and Drop Listener
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    const setupListener = async () => {
+      try {
+        unlisten = await getCurrentWindow().onDragDropEvent((event) => {
+          if (event.payload.type === 'drop') {
+            handleDrop(event.payload.paths);
+          }
+        });
+      } catch (e) {
+        console.error("Failed to setup DnD listener:", e);
+      }
+    };
+
+    setupListener();
+
+    return () => {
+      if (unlisten) {
+        unlisten();
+      }
+    };
+  }, [activeTab, selectedProfileId, profiles]);
+
+  async function handleDrop(paths: string[]) {
+    if (activeTab === "mods" && activeProfile) {
+      let installedCount = 0;
+      let errors: string[] = [];
+
+      for (const path of paths) {
+        if (path.endsWith(".jar")) {
+          try {
+            await installMod(path, activeProfile.mods_dir);
+            installedCount++;
+          } catch (error) {
+            console.error("Failed to install mod:", error);
+            errors.push(`${path}: ${error}`);
+          }
+        }
+      }
+
+      if (installedCount > 0) {
+        setRefreshKey(prev => prev + 1);
+        // Optional: Show success message via a proper UI component in the future
+      }
+
+      if (errors.length > 0) {
+        alert(`Some mods failed to install:\n${errors.join('\n')}`);
+      }
+    }
+  }
+
   async function loadProfiles() {
     const data = await fetchLauncherProfiles(launcherPath || undefined);
     setProfiles(data);
     if (data.length > 0) {
-      // Keep selected profile if still valid, otherwise select first
       if (!data.find(p => p.id === selectedProfileId)) {
         setSelectedProfileId(data[0].id);
       }
@@ -105,6 +159,7 @@ function App() {
             <div className="absolute inset-0 flex">
               <div className="w-1/2 flex flex-col border-r border-[#333] overflow-y-auto p-4 custom-scrollbar">
                 <ModList
+                  key={activeProfile.mods_dir + refreshKey}
                   path={activeProfile.mods_dir}
                   selectedModId={selectedMod?.id}
                   onSelect={setSelectedMod}
