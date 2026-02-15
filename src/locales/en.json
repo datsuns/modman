@@ -21,6 +21,11 @@
     "settings": {
         "language": "Language",
         "english": "English",
-        "japanese": "Japanese"
+        "japanese": "Japanese",
+        "launcher_path": "Launcher Path",
+        "launcher_path_placeholder": "Path to launcher_profiles.json",
+        "browse": "Browse",
+        "reset_default": "Reset to Default",
+        "save": "Save"
     }
 }

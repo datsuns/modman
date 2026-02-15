@@ -21,6 +21,11 @@
     "settings": {
         "language": "言語",
         "english": "英語",
-        "japanese": "日本語"
+        "japanese": "日本語",
+        "launcher_path": "ランチャー設定パス",
+        "launcher_path_placeholder": "launcher_profiles.json へのパス",
+        "browse": "参照",
+        "reset_default": "デフォルトに戻す",
+        "save": "保存"
     }
 }

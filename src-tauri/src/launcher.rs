@@ -3,10 +3,16 @@ use std::fs;
 use serde_json::Value;
 use crate::models::LauncherProfile;
 
-pub fn get_launcher_profiles() -> Result<Vec<LauncherProfile>, String> {
-    let appdata = std::env::var("APPDATA").map_err(|e| e.to_string())?;
-    let minecraft_dir = PathBuf::from(&appdata).join(".minecraft");
-    let path = minecraft_dir.join("launcher_profiles.json");
+pub fn get_launcher_profiles(custom_path: Option<String>) -> Result<Vec<LauncherProfile>, String> {
+    let path = if let Some(p) = custom_path {
+        PathBuf::from(p)
+    } else {
+        let appdata = std::env::var("APPDATA").map_err(|e| e.to_string())?;
+        PathBuf::from(&appdata).join(".minecraft").join("launcher_profiles.json")
+    };
+    
+    // Default minecraft_dir for resolving relative paths
+    let minecraft_dir = path.parent().unwrap_or(&PathBuf::from(".")).to_path_buf();
 
     if !path.exists() {
         return Err(format!("launcher_profiles.json not found at {:?}", path));

@@ -5,12 +5,14 @@ import { ModMetadata, LauncherProfile } from "../types";
 // In a real app, you might want to detect if window.__TAURI_INTERNALS__ is present
 const USE_MOCK = false;
 
-export async function fetchLauncherProfiles(): Promise<LauncherProfile[]> {
+export async function fetchLauncherProfiles(customPath?: string): Promise<LauncherProfile[]> {
     if (USE_MOCK) {
         return MOCK_PROFILES;
     }
     try {
-        return await invoke("fetch_profiles_command");
+        // Pass the optional custom path to the backend
+        // Note: Key must match the argument name in Rust command: `custom_path`
+        return await invoke("fetch_profiles_command", { customPath });
     } catch (error) {
         console.error("Failed to fetch profiles:", error);
         return [];

@@ -18,14 +18,15 @@ fn scan_mods_command(path: String) -> Vec<ModMetadata> {
 }
 
 #[tauri::command]
-fn fetch_profiles_command() -> Result<Vec<LauncherProfile>, String> {
-    launcher::get_launcher_profiles()
+fn fetch_profiles_command(custom_path: Option<String>) -> Result<Vec<LauncherProfile>, String> {
+    launcher::get_launcher_profiles(custom_path)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![greet, scan_mods_command, fetch_profiles_command])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

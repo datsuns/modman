@@ -5,22 +5,27 @@ import { LauncherProfile } from "./types";
 import { LayoutGrid, Settings, FolderOpen, Play } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
+import { open } from "@tauri-apps/plugin-dialog";
 
 function App() {
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("mods");
   const [profiles, setProfiles] = useState<LauncherProfile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+  const [launcherPath, setLauncherPath] = useState(localStorage.getItem("launcherPath") || "");
 
   useEffect(() => {
     loadProfiles();
   }, []);
 
   async function loadProfiles() {
-    const data = await fetchLauncherProfiles();
+    const data = await fetchLauncherProfiles(launcherPath || undefined);
     setProfiles(data);
     if (data.length > 0) {
-      setSelectedProfileId(data[0].id);
+      // Keep selected profile if still valid, otherwise select first
+      if (!data.find(p => p.id === selectedProfileId)) {
+        setSelectedProfileId(data[0].id);
+      }
     }
   }
 
@@ -102,9 +107,10 @@ function App() {
             <div className="text-center text-gray-500 mt-20">Instance Manager uses a different folder structure.</div>
           )}
           {activeTab === "settings" && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto space-y-6">
               <h3 className="text-xl font-medium mb-6">{t('sidebar.settings')}</h3>
 
+              {/* Language Config */}
               <div className="bg-[#252526] rounded-lg p-6 border border-[#333]">
                 <h4 className="text-md font-medium mb-4 text-emerald-400">{t('settings.language')}</h4>
                 <div className="flex gap-3">
@@ -130,6 +136,61 @@ function App() {
                   >
                     {t('settings.japanese')}
                   </button>
+                </div>
+              </div>
+
+              {/* Launcher Path Config */}
+              <div className="bg-[#252526] rounded-lg p-6 border border-[#333]">
+                <h4 className="text-md font-medium mb-4 text-emerald-400">{t('settings.launcher_path')}</h4>
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={launcherPath}
+                      onChange={(e) => setLauncherPath(e.target.value)}
+                      placeholder={t('settings.launcher_path_placeholder')}
+                      className="flex-1 bg-[#1e1e1e] border border-[#333] rounded p-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-600"
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const selected = await open({
+                            multiple: false,
+                            directory: false,
+                            filters: [{
+                              name: 'Launcher Profiles',
+                              extensions: ['json']
+                            }]
+                          });
+                          if (selected && typeof selected === 'string') {
+                            setLauncherPath(selected);
+                          }
+                        } catch (err) {
+                          console.error("Failed to open file dialog", err);
+                        }
+                      }}
+                      className="px-4 py-2 bg-[#3e3e3e] hover:bg-[#4e4e4e] text-white rounded-md text-sm font-medium transition-colors"
+                    >
+                      {t('settings.browse')}
+                    </button>
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setLauncherPath("")}
+                      className="px-4 py-2 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                    >
+                      {t('settings.reset_default')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        localStorage.setItem("launcherPath", launcherPath);
+                        loadProfiles(); // Reload profiles with new path
+                      }}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition-colors"
+                    >
+                      {t('settings.save')}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
