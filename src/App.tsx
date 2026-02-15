@@ -96,9 +96,6 @@ function App() {
             {activeTab === "instances" && t('sidebar.instances')}
             {activeTab === "settings" && t('sidebar.settings')}
           </h2>
-          <div className="text-sm text-gray-500">
-            {t('app.version')}
-          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-6">
@@ -192,6 +189,10 @@ function App() {
                     </button>
                   </div>
                 </div>
+              </div>
+
+              <div className="text-center text-xs text-gray-600 pt-8">
+                {t('app.version')}
               </div>
             </div>
           )}
