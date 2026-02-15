@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { ModList } from "./components/ModList";
 import { ModDetail } from "./components/ModDetail";
-import { fetchLauncherProfiles, installMod } from "./lib/api";
+import { fetchLauncherProfiles, installMod, scanMods, toggleModEnabled } from "./lib/api";
 import { LauncherProfile, ModMetadata } from "./types";
-import { LayoutGrid, Settings, FolderOpen, Play } from "lucide-react";
+import { LayoutGrid, Settings, FolderOpen, Play, Loader2 } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -18,9 +19,56 @@ function App() {
   const [selectedMod, setSelectedMod] = useState<ModMetadata | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Lifted state from ModList
+  const [mods, setMods] = useState<ModMetadata[]>([]);
+  const [loadingMods, setLoadingMods] = useState(false);
+
   useEffect(() => {
     loadProfiles();
   }, []);
+
+  const activeProfile = profiles.find(p => p.id === selectedProfileId);
+
+  // Load mods whenever active profile (path) or refreshKey changes
+  useEffect(() => {
+    if (activeProfile) {
+      loadMods(activeProfile.mods_dir);
+    }
+  }, [activeProfile, refreshKey]);
+
+  async function loadMods(targetPath: string) {
+    setLoadingMods(true);
+    try {
+      const data = await scanMods(targetPath);
+      // Sort by enabled first, then name
+      data.sort((a, b) => {
+        if (a.enabled === b.enabled) {
+          return a.name.localeCompare(b.name);
+        }
+        return a.enabled ? -1 : 1;
+      });
+      setMods(data);
+
+      // If we have a selected mod, update it with the fresh data (e.g. if it was toggled)
+      if (selectedMod) {
+        const updated = data.find(m => m.id === selectedMod.id);
+        if (updated) setSelectedMod(updated);
+      }
+    } catch (err) {
+      console.error("Failed to load mods:", err);
+    } finally {
+      setLoadingMods(false);
+    }
+  }
+
+  async function toggleMod(mod: ModMetadata) {
+    try {
+      await toggleModEnabled(mod.file_path, !mod.enabled);
+      setRefreshKey(prev => prev + 1); // Trigger reload
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   // Drag and Drop Listener
   useEffect(() => {
@@ -59,7 +107,7 @@ function App() {
             installedCount++;
           } catch (error) {
             console.error("Failed to install mod:", error);
-            errors.push(`${path}: ${error}`);
+            errors.push(`${path}: ${error} `);
           }
         }
       }
@@ -70,7 +118,7 @@ function App() {
       }
 
       if (errors.length > 0) {
-        alert(`Some mods failed to install:\n${errors.join('\n')}`);
+        alert(`Some mods failed to install: \n${errors.join('\n')} `);
       }
     }
   }
@@ -84,8 +132,6 @@ function App() {
       }
     }
   }
-
-  const activeProfile = profiles.find(p => p.id === selectedProfileId);
 
   return (
     <div className="flex h-screen w-full bg-[#1e1e1e] text-gray-200 font-sans overflow-hidden">
@@ -158,12 +204,18 @@ function App() {
           {activeTab === "mods" && activeProfile && (
             <div className="absolute inset-0 flex">
               <div className="w-1/2 flex flex-col border-r border-[#333] overflow-y-auto p-4 custom-scrollbar">
-                <ModList
-                  key={activeProfile.mods_dir + refreshKey}
-                  path={activeProfile.mods_dir}
-                  selectedModId={selectedMod?.id}
-                  onSelect={setSelectedMod}
-                />
+                {loadingMods ? (
+                  <div className="flex h-40 items-center justify-center text-gray-400">
+                    <Loader2 className="animate-spin mr-2" /> {t('app.loading')}
+                  </div>
+                ) : (
+                  <ModList
+                    mods={mods}
+                    selectedModId={selectedMod?.id}
+                    onSelect={setSelectedMod}
+                    onToggle={toggleMod}
+                  />
+                )}
               </div>
               <div className="w-1/2 bg-[#1e1e1e] overflow-y-auto custom-scrollbar">
                 <ModDetail mod={selectedMod} />

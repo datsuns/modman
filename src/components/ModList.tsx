@@ -1,94 +1,61 @@
-import { useEffect, useState } from "react";
 import { ModMetadata } from "../types";
-import { scanMods, toggleModEnabled } from "../lib/api";
-import { Package, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
+import { Package, ToggleLeft, ToggleRight } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 
 interface ModListProps {
-    path: string;
+    mods: ModMetadata[];
     selectedModId?: string;
     onSelect?: (mod: ModMetadata) => void;
+    onToggle: (mod: ModMetadata) => void;
 }
 
-export function ModList({ path, selectedModId, onSelect }: ModListProps) {
+export function ModList({ mods, selectedModId, onSelect, onToggle }: ModListProps) {
     const { t } = useTranslation();
-    const [mods, setMods] = useState<ModMetadata[]>([]);
-    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (path) {
-            loadMods(path);
-        }
-    }, [path]);
-
-    async function loadMods(targetPath: string) {
-        setLoading(true);
-        const data = await scanMods(targetPath);
-        setMods(data);
-        setLoading(false);
-    }
-
-    async function toggleMod(id: string, e: React.MouseEvent) {
-        e.stopPropagation(); // Prevent row selection when clicking toggle
-        const modToToggle = mods.find(m => m.id === id);
-        if (!modToToggle) return;
-
-        try {
-            const newPath = await toggleModEnabled(modToToggle.file_path, !modToToggle.enabled);
-
-            setMods(mods.map(mod => {
-                if (mod.id === id) {
-                    return {
-                        ...mod,
-                        enabled: !mod.enabled,
-                        file_path: newPath,
-                        file_name: newPath.split(/[\\/]/).pop() || mod.file_name
-                    };
-                }
-                return mod;
-            }));
-        } catch (error) {
-            console.error("Failed to toggle mod:", error);
-        }
+    if (mods.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <Package size={48} className="mb-4 opacity-20" />
+                <p>{t('modlist.empty')}</p>
+            </div>
+        );
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            {loading ? (
-                <div className="flex h-40 items-center justify-center text-gray-400">
-                    <Loader2 className="animate-spin mr-2" /> {t('app.loading')}
-                </div>
-            ) : (
-                <div className="flex flex-col gap-2">
-                    {mods.map((mod) => (
-                        <div
-                            key={mod.id}
-                            onClick={() => onSelect?.(mod)}
-                            className={clsx(
-                                "flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer",
-                                mod.id === selectedModId
-                                    ? "bg-indigo-500/20 border-indigo-500/50"
-                                    : mod.enabled
-                                        ? "bg-white/5 border-white/10 hover:bg-white/10"
-                                        : "bg-black/20 border-white/5 opacity-60 hover:opacity-80"
-                            )}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={clsx(
-                                    "p-2 rounded-md",
-                                    mod.id === selectedModId ? "text-indigo-300" : "text-indigo-400 bg-indigo-500/20"
-                                )}>
-                                    <Package size={20} />
-                                </div>
-                                <div>
-                                    <h3 className="font-medium text-gray-100">{mod.name}</h3>
-                                    <p className="text-xs text-gray-400">{mod.version} • {mod.id}</p>
+        <div className="space-y-2">
+            {mods.map((mod) => {
+                return (
+                    <div
+                        key={mod.file_name}
+                        onClick={() => onSelect?.(mod)}
+                        className={clsx(
+                            "flex items-center justify-between p-3 rounded-lg border transition-colors relative cursor-pointer",
+                            mod.id === selectedModId
+                                ? "bg-indigo-500/20 border-indigo-500/50"
+                                : mod.enabled
+                                    ? "bg-white/5 border-white/10 hover:bg-white/10"
+                                    : "bg-black/20 border-white/5 opacity-60 hover:opacity-80"
+                        )}
+                    >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <div className={clsx("p-2 rounded-lg", mod.enabled ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-500")}>
+                                <Package size={20} />
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-medium text-gray-200 truncate">{mod.name}</h3>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <span className="truncate">{mod.version}</span>
                                 </div>
                             </div>
+                        </div>
 
+                        <div className="flex items-center gap-3">
                             <button
-                                onClick={(e) => toggleMod(mod.id, e)}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent row selection when clicking toggle
+                                    onToggle(mod);
+                                }}
                                 className={clsx(
                                     "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
                                     mod.enabled
@@ -100,15 +67,9 @@ export function ModList({ path, selectedModId, onSelect }: ModListProps) {
                                 {mod.enabled ? t('modlist.enabled') : t('modlist.disabled')}
                             </button>
                         </div>
-                    ))}
-
-                    {!loading && mods.length === 0 && (
-                        <div className="text-center text-gray-500 mt-10">
-                            {t('app.no_mods', { path })}
-                        </div>
-                    )}
-                </div>
-            )}
+                    </div>
+                );
+            })}
         </div>
     );
 }
