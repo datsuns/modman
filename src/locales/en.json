@@ -1,0 +1,26 @@
+{
+    "app": {
+        "title": "ModMan",
+        "launch": "Launch Minecraft",
+        "version": "v0.1.0-alpha",
+        "scan": "Scan",
+        "loading": "Loading mods...",
+        "no_mods": "No mods found in: {{path}}",
+        "path_placeholder": "Path to mods folder"
+    },
+    "sidebar": {
+        "mods": "My Mods",
+        "instances": "Instances",
+        "settings": "Settings",
+        "profiles": "Profiles"
+    },
+    "modlist": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+    },
+    "settings": {
+        "language": "Language",
+        "english": "English",
+        "japanese": "Japanese"
+    }
+}
